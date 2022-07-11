@@ -7,6 +7,7 @@ exports
 typechain
 coverage
 coverage.json
+yarn.lock
 
 .vscode
 .env
