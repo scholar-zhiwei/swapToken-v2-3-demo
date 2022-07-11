@@ -257,7 +257,7 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
     function setSaleTime(uint256 _startTime,uint256 _endTime,uint flag) external onlyOwner {
         if(flag == SET_WL_SALE_TIME){
             wlSaleStartTime = _startTime;
-            wlSaleEndTime = _startTime;
+            wlSaleEndTime = _endTime;
         }else if(flag == SET_FREE_SALE_TIME){
             freeSaleStartTime = _startTime;
             freeSaleEndTime = _endTime;
