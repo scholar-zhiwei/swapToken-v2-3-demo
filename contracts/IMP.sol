@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
-contract CyborgCivet is ERC721, Ownable, ReentrancyGuard {
+contract IMP is ERC721, Ownable, ReentrancyGuard {
     using Strings for uint256;
     using Counters for Counters.Counter;
 
@@ -41,7 +41,6 @@ contract CyborgCivet is ERC721, Ownable, ReentrancyGuard {
     mapping(address => uint256) public whitelistClaimed;
     bytes32 private merkleRoot;
     uint256 public preSaleAmountMinted;
-    bool public isPreSaleLive;
 
     //FREE MINT
     uint256 public freeSaleStartTime;
@@ -98,7 +97,7 @@ contract CyborgCivet is ERC721, Ownable, ReentrancyGuard {
         uint256 allowedMintQuantity,
         uint256 mintQuantity
     ) external payable nonReentrant callerIsUser {
-        if (!isPreSaleLive || isSaleLive(wlSaleStartTime,wlSaleEndTime))
+        if (!isSaleLive(wlSaleStartTime,wlSaleEndTime))
             revert PreSaleInactive();
 
         if (preSaleAmountMinted + mintQuantity > PRE_SALE_SUPPLY)
