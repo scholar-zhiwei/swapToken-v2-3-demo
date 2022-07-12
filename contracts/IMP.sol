@@ -24,9 +24,6 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
     uint256 public constant CASHIER_SALE_SUPPLY = 5000;
     uint256 public constant VIP_SERVICE_SALE_SUPPLY = 100;
 
-    uint256 public constant SET_WL_SALE_TIME = 0;
-    uint256 public constant SET_FREE_SALE_TIME = 1;
-    uint256 public constant SET_CASHIER_SALE_TIME = 2;
 
     Counters.Counter public totalSupply;
 
