@@ -119,17 +119,17 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
         emit Minted(getRemainingSupply());
     }
 
-    function freeSaleBuy(uint256 mintQuantity) external nonReentrant callerIsUser {
+    function freeSaleBuy() external nonReentrant callerIsUser {
         if (!isSaleLive(freeSaleStartTime, freeSaleEndTime)) revert SaleInactive();
 
-        if (freeSaleAmountMinted + mintQuantity > FREE_SALE_SUPPLY) revert ExceedsFreeMaxSupply();
+        if (freeSaleAmountMinted + 1 > FREE_SALE_SUPPLY) revert ExceedsFreeMaxSupply();
 
-        if (freeSaleClaimed[msg.sender] + mintQuantity > FREE_SALE_MINT_LIMIT)
+        if (freeSaleClaimed[msg.sender] + 1 > FREE_SALE_MINT_LIMIT)
             revert ExceedsAllocatedForFreeSale();
 
         unchecked {
-            freeSaleAmountMinted += mintQuantity;
-            freeSaleClaimed[msg.sender] += mintQuantity;
+            freeSaleAmountMinted += 1;
+            freeSaleClaimed[msg.sender] += 1;
         }
 
         totalSupply.increment();
