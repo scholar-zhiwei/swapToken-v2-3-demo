@@ -87,7 +87,7 @@ describe('Test IMP', async function () {
       const maxSupply = await imp.MAX_SUPPLY()
       await expect(imp.connect(unWhitelisted[0]).wlPreSaleBuy(proof, 2, 1)).revertedWithCustomError(
         imp,
-        'NotOnWhitelist',
+        'NotOnWhitelist'
       )
     })
     it('freeSaleBuy 1', async function () {

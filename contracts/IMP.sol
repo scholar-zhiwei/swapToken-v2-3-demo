@@ -54,6 +54,8 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
 
     //VIP SERVICE
     uint256 public vipServiceSaleStartPrice = 1 ether;
+    uint256 public vipServiceSaleAmountMinted;
+    mapping(address => uint256) public vipServiceSaleClaimed;
 
     error DirectMintFromContractNotAllowed();
     error PublicSaleInactive();
@@ -166,14 +168,15 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
     }
 
     function vipServiceSaleBuy(uint256 mintQuantity) external payable nonReentrant callerIsUser {
-        if (cashierSaleAmountMinted + mintQuantity > VIP_SERVICE_SALE_SUPPLY)
+        if (vipServiceSaleAmountMinted + mintQuantity > VIP_SERVICE_SALE_SUPPLY)
             revert ExceedsVipServiceMaxSupply();
 
-        if (msg.value < vipServiceSaleStartPrice * mintQuantity) revert InsufficientETHSent();
+        if (msg.value < vipServiceSaleStartPrice * mintQuantity) 
+            revert InsufficientETHSent();
 
         unchecked {
-            cashierSaleAmountMinted += mintQuantity;
-            cashierSaleClaimed[msg.sender] += mintQuantity;
+            vipServiceSaleAmountMinted += mintQuantity;
+            vipServiceSaleClaimed[msg.sender] += mintQuantity;
         }
 
         for (uint256 i; i < mintQuantity; ) {
