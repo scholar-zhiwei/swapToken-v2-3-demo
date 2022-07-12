@@ -25,6 +25,8 @@ describe('Test IMP', async function () {
     whitelisted.push(new ethers.Wallet(randomHex(32), provider))
     whitelisted.push(new ethers.Wallet(randomHex(32), provider))
     unWhitelisted.push(new ethers.Wallet(randomHex(32), provider))
+    // const [owners] = await ethers.getSigners();
+    // console.log(owners);
 
     faucet(owner.address, provider)
     await Promise.all(whitelisted.map((wallet) => faucet(wallet.address, provider)))
@@ -39,9 +41,9 @@ describe('Test IMP', async function () {
       // Set BaseUri
       const baseUri = 'ipfs://QmXRyAKyKRXMjJa6tD7eDe3YHH2V8Cegz5CzK6t9rrPN1d/'
       const currentTimestamp = (await provider.getBlock('latest')).timestamp
-      await imp.setSaleTime(currentTimestamp - 1, currentTimestamp + 60 * 60 * 2, 0)
-      await imp.setSaleTime(currentTimestamp - 1, currentTimestamp + 60 * 60 * 2, 1)
-      await imp.setSaleTime(currentTimestamp - 1, currentTimestamp + 60 * 60 * 24, 2)
+      await imp.setWlSaleTime(currentTimestamp - 1, currentTimestamp + 60 * 60 * 2)
+      //   await imp.setSaleTime(currentTimestamp - 1, currentTimestamp + 60 * 60 * 2, 1)
+      //   await imp.setSaleTime(currentTimestamp - 1, currentTimestamp + 60 * 60 * 24, 2)
 
       await imp.setBaseURI(baseUri)
       tokenSnapshot = await takeSnapshot()
@@ -68,6 +70,26 @@ describe('Test IMP', async function () {
       expect(await imp.balanceOf(whitelisted[0].address)).to.be.equal(1)
       expect(await imp.totalSupply()).to.be.equal(1)
     })
+    it('preSaleBuy fail', async function () {
+      const leafNodes = whitelisted.map((x) => keccak256(solidityPack(['address', 'uint256'], [x.address, '2'])))
+      //   console.log('leaves', leafNodes)
+      const tree = new MerkleTree(leafNodes, keccak256, { sortPairs: true })
+      const root = tree.getHexRoot()
+      //   console.log('tree', tree.toString())
+      //   console.log('merkleRoot', root.toString())
+
+      //   console.log(tree.verify(proof, leaf, root))
+      await imp.setMerkleRoot(root)
+      //   console.log('whitelisted[0].address', whitelisted[0].address)
+      const leaf = keccak256(solidityPack(['address', 'uint256'], [unWhitelisted[0].address, '2']))
+      const proof = tree.getHexProof(leaf)
+      //   console.log('proof', proof)
+      const maxSupply = await imp.MAX_SUPPLY()
+      await expect(imp.connect(unWhitelisted[0]).wlPreSaleBuy(proof, 2, 1)).revertedWithCustomError(
+        imp,
+        'NotOnWhitelist',
+      )
+    })
     it('freeSaleBuy 1', async function () {
       const maxSupply = await imp.MAX_SUPPLY()
       await expect(imp.connect(owner).freeSaleBuy(1)).emit(imp, 'Minted').withArgs(maxSupply.sub(1))
@@ -76,13 +98,17 @@ describe('Test IMP', async function () {
     })
     it('cashierSaleBuy 1', async function () {
       const maxSupply = await imp.MAX_SUPPLY()
-      await expect(imp.connect(owner).cashierSaleBuy(2,{value:ethers.utils.parseEther("0.1")})).emit(imp, 'Minted').withArgs(maxSupply.sub(2))
+      await expect(imp.connect(owner).cashierSaleBuy(2, { value: ethers.utils.parseEther('0.1') }))
+        .emit(imp, 'Minted')
+        .withArgs(maxSupply.sub(2))
       expect(await imp.balanceOf(owner.address)).to.be.equal(2)
       expect(await imp.totalSupply()).to.be.equal(2)
     })
     it('vipServiceSaleBuy 1', async function () {
       const maxSupply = await imp.MAX_SUPPLY()
-      await expect(imp.connect(owner).vipServiceSaleBuy(10,{value:ethers.utils.parseEther("10")})).emit(imp, 'Minted').withArgs(maxSupply.sub(10))
+      await expect(imp.connect(owner).vipServiceSaleBuy(10, { value: ethers.utils.parseEther('10') }))
+        .emit(imp, 'Minted')
+        .withArgs(maxSupply.sub(10))
       expect(await imp.balanceOf(owner.address)).to.be.equal(10)
       expect(await imp.totalSupply()).to.be.equal(10)
     })

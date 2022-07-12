@@ -22,7 +22,7 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
     uint256 public constant FREE_SALE_SUPPLY = 3000;
     uint256 public constant PRE_SALE_SUPPLY = 1000;
     uint256 public constant CASHIER_SALE_SUPPLY = 5000;
-    uint256 public constant VIP_SERVICE_SALE_SUPPLY = 5000;
+    uint256 public constant VIP_SERVICE_SALE_SUPPLY = 100;
 
     uint256 public constant SET_WL_SALE_TIME = 0;
     uint256 public constant SET_FREE_SALE_TIME = 1;
@@ -151,8 +151,7 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
         if (cashierSaleClaimed[msg.sender] + mintQuantity > CASHIER_SALE_MINT_LIMIT)
             revert ExceedsAllocatedForFreeSale();
 
-        if (msg.value < cashierSaleStartPrice * mintQuantity)
-            revert InsufficientETHSent();
+        if (msg.value < cashierSaleStartPrice * mintQuantity) revert InsufficientETHSent();
 
         unchecked {
             cashierSaleAmountMinted += mintQuantity;
@@ -172,9 +171,8 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
     function vipServiceSaleBuy(uint256 mintQuantity) external payable nonReentrant callerIsUser {
         if (cashierSaleAmountMinted + mintQuantity > VIP_SERVICE_SALE_SUPPLY)
             revert ExceedsVipServiceMaxSupply();
-            
-        if (msg.value < vipServiceSaleStartPrice * mintQuantity)
-            revert InsufficientETHSent();
+
+        if (msg.value < vipServiceSaleStartPrice * mintQuantity) revert InsufficientETHSent();
 
         unchecked {
             cashierSaleAmountMinted += mintQuantity;
@@ -243,6 +241,18 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
                 : "";
     }
 
+    function isWithinTimeOfWl() public view returns (bool) {
+        return  block.timestamp >= wlSaleStartTime && block.timestamp < wlSaleEndTime;
+    }
+
+    function isWithinTimeOfFree() public view returns (bool) {
+        return  block.timestamp >= freeSaleStartTime && block.timestamp < freeSaleEndTime;
+    }
+
+    function isWithinTimeOfCashier() public view returns (bool) {
+        return  block.timestamp >= cashierSaleStartTime && block.timestamp < cashierSaleEndTime;
+    }
+
     function _baseURI() internal view override returns (string memory) {
         return baseURI;
     }
@@ -251,22 +261,19 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
         baseURI = _uri;
     }
 
-    //flag = 0: wlSale, flag = 1: freeSale, flag = 2:cashierSale
-    function setSaleTime(
-        uint256 _startTime,
-        uint256 _endTime,
-        uint256 flag
-    ) external onlyOwner {
-        if (flag == SET_WL_SALE_TIME) {
-            wlSaleStartTime = _startTime;
-            wlSaleEndTime = _endTime;
-        } else if (flag == SET_FREE_SALE_TIME) {
-            freeSaleStartTime = _startTime;
-            freeSaleEndTime = _endTime;
-        } else if (flag == SET_CASHIER_SALE_TIME) {
-            cashierSaleStartTime = _startTime;
-            cashierSaleEndTime = _endTime;
-        }
+    function setWlSaleTime(uint256 _startTime, uint256 _endTime) external onlyOwner {
+        wlSaleStartTime = _startTime;
+        wlSaleEndTime = _endTime;
+    }
+
+    function setFreeSaleTime(uint256 _startTime, uint256 _endTime) external onlyOwner {
+        freeSaleStartTime = _startTime;
+        freeSaleEndTime = _endTime;
+    }
+
+    function setCashierSaleTime(uint256 _startTime, uint256 _endTime) external onlyOwner {
+        cashierSaleStartTime = _startTime;
+        cashierSaleEndTime = _endTime;
     }
 
     function setMerkleRoot(bytes32 _merkleRoot) external onlyOwner {
