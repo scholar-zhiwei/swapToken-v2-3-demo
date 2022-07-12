@@ -208,6 +208,24 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
         emit Minted(getRemainingSupply());
     }
 
+    function foundersMintOneTo(address[] calldata addressArr) external onlyOwner nonReentrant {
+        if (foundersAmountMinted + addressArr.length > FOUNDERS_SUPPLY)
+            revert ExceedsAllocatedForFounders();
+
+        for (uint256 i; i < addressArr.length; ) {
+            totalSupply.increment();
+            _mint(addressArr[i], totalSupply.current());
+            unchecked {
+                ++i;
+            }
+        }
+
+        unchecked {
+            foundersAmountMinted += addressArr.length;
+        }
+        emit Minted(getRemainingSupply());
+    }
+
     function withdraw() external onlyOwner nonReentrant {
         (bool success, ) = payable(msg.sender).call{ value: address(this).balance }("");
 
