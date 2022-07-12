@@ -55,7 +55,6 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
     uint256 public vipServiceSaleStartTime;
     uint256 public vipServiceSaleStartPrice = 1 ether;
     uint256 public vipServiceSaleAmountMinted;
-    mapping(address => uint256) public vipServiceSaleClaimed;
 
     error DirectMintFromContractNotAllowed();
     error PublicSaleInactive();
@@ -84,16 +83,12 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
         }
     }
 
-    function isSaleLive(uint256 startTime, uint256 endTime) public view returns (bool) {
-        return startTime > 0 && block.timestamp >= startTime && block.timestamp < endTime;
-    }
-
     function wlPreSaleBuy(
         bytes32[] memory _merkleproof,
         uint256 allowedMintQuantity,
         uint256 mintQuantity
     ) external nonReentrant callerIsUser {
-        if (!isSaleLive(wlSaleStartTime, wlSaleEndTime)) revert SaleInactive();
+        if (!isWithinTimeOfWl()) revert SaleInactive();
 
         if (preSaleAmountMinted + mintQuantity > PRE_SALE_SUPPLY) revert ExceedsPreSaleSupply();
 
@@ -120,7 +115,7 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
     }
 
     function freeSaleBuy() external nonReentrant callerIsUser {
-        if (!isSaleLive(freeSaleStartTime, freeSaleEndTime)) revert SaleInactive();
+        if (!isWithinTimeOfFree()) revert SaleInactive();
 
         if (freeSaleAmountMinted + 1 > FREE_SALE_SUPPLY) revert ExceedsFreeMaxSupply();
 
@@ -139,7 +134,7 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
     }
 
     function cashierSaleBuy(uint256 mintQuantity) external payable nonReentrant callerIsUser {
-        if (!isSaleLive(cashierSaleStartTime, cashierSaleEndTime)) revert SaleInactive();
+        if (!isWithinTimeOfCashier()) revert SaleInactive();
 
         if (cashierSaleAmountMinted + mintQuantity > CASHIER_SALE_MINT_LIMIT)
             revert ExceedsCashierMaxSupply();
@@ -165,7 +160,7 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
     }
 
     function vipServiceSaleBuy(uint256 mintQuantity) external payable nonReentrant callerIsUser {
-        if (block.timestamp < vipServiceSaleStartTime) revert SaleInactive();
+        if (!isWithinTimeOfVipService()) revert SaleInactive();
 
         if (vipServiceSaleAmountMinted + mintQuantity > VIP_SERVICE_SALE_SUPPLY)
             revert ExceedsVipServiceMaxSupply();
@@ -174,7 +169,6 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
 
         unchecked {
             vipServiceSaleAmountMinted += mintQuantity;
-            vipServiceSaleClaimed[msg.sender] += mintQuantity;
         }
 
         for (uint256 i; i < mintQuantity; ) {
@@ -240,15 +234,30 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
     }
 
     function isWithinTimeOfWl() public view returns (bool) {
-        return block.timestamp >= wlSaleStartTime && block.timestamp < wlSaleEndTime;
+        return
+            wlSaleStartTime > 0 &&
+            block.timestamp >= wlSaleStartTime &&
+            block.timestamp < wlSaleEndTime;
     }
 
     function isWithinTimeOfFree() public view returns (bool) {
-        return block.timestamp >= freeSaleStartTime && block.timestamp < freeSaleEndTime;
+        return
+            freeSaleStartTime > 0 &&
+            block.timestamp >= freeSaleStartTime &&
+            block.timestamp < freeSaleEndTime;
     }
 
     function isWithinTimeOfCashier() public view returns (bool) {
-        return block.timestamp >= cashierSaleStartTime && block.timestamp < cashierSaleEndTime;
+        return
+            cashierSaleStartTime > 0 &&
+            block.timestamp >= cashierSaleStartTime &&
+            block.timestamp < cashierSaleEndTime;
+    }
+
+     function isWithinTimeOfVipService() public view returns (bool) {
+        return
+            vipServiceSaleStartTime > 0 &&
+            block.timestamp >= vipServiceSaleStartTime;
     }
 
     function _baseURI() internal view override returns (string memory) {
