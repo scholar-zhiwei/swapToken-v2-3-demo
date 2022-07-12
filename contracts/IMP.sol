@@ -13,11 +13,9 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
     using Counters for Counters.Counter;
 
     string public baseURI;
-    string public baseUriSuffix= ".json";
+    string public baseUriSuffix = ".json";
 
-    constructor(string memory _name, string memory _symbol)
-        ERC721(_name, _symbol)
-    {}
+    constructor(string memory _name, string memory _symbol) ERC721(_name, _symbol) {}
 
     uint256 public constant MAX_SUPPLY = 10000;
     uint256 public constant FOUNDERS_SUPPLY = 900;
@@ -78,65 +76,57 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
     event Minted(uint256 remainingSupply);
 
     modifier callerIsUser() {
-        if (tx.origin != msg.sender)
-            revert DirectMintFromContractNotAllowed();
+        if (tx.origin != msg.sender) revert DirectMintFromContractNotAllowed();
         _;
     }
 
     function getRemainingSupply() public view returns (uint256) {
-        unchecked { return MAX_SUPPLY - totalSupply.current(); }
+        unchecked {
+            return MAX_SUPPLY - totalSupply.current();
+        }
     }
 
-    function isSaleLive(uint startTime,uint endTime) public view returns (bool) {
-        return
-            startTime > 0 && block.timestamp >= startTime && block.timestamp < endTime;
-    }   
+    function isSaleLive(uint256 startTime, uint256 endTime) public view returns (bool) {
+        return startTime > 0 && block.timestamp >= startTime && block.timestamp < endTime;
+    }
 
     function wlPreSaleBuy(
         bytes32[] memory _merkleproof,
         uint256 allowedMintQuantity,
         uint256 mintQuantity
     ) external nonReentrant callerIsUser {
-        if (!isSaleLive(wlSaleStartTime,wlSaleEndTime))
-            revert PreSaleInactive();
+        if (!isSaleLive(wlSaleStartTime, wlSaleEndTime)) revert PreSaleInactive();
 
-        if (preSaleAmountMinted + mintQuantity > PRE_SALE_SUPPLY)
-            revert ExceedsPreSaleSupply();
+        if (preSaleAmountMinted + mintQuantity > PRE_SALE_SUPPLY) revert ExceedsPreSaleSupply();
 
         if (whitelistClaimed[msg.sender] + mintQuantity > allowedMintQuantity)
             revert ExceedsAllocatedForPreSale();
 
         bytes32 leaf = keccak256(abi.encodePacked(msg.sender, allowedMintQuantity));
-        if (!MerkleProof.verify(_merkleproof, merkleRoot, leaf))
-            revert NotOnWhitelist();
+        if (!MerkleProof.verify(_merkleproof, merkleRoot, leaf)) revert NotOnWhitelist();
 
         unchecked {
             preSaleAmountMinted += mintQuantity;
             whitelistClaimed[msg.sender] += mintQuantity;
         }
 
-        for (uint256 i; i < mintQuantity;) {
+        for (uint256 i; i < mintQuantity; ) {
             totalSupply.increment();
             _mint(msg.sender, totalSupply.current());
-            unchecked { ++i; }
+            unchecked {
+                ++i;
+            }
         }
 
         emit Minted(getRemainingSupply());
     }
 
-    function freeSaleBuy(uint mintQuantity)
-        external
-        nonReentrant
-        callerIsUser
-    {
-        if (mintQuantity == 0)
-            revert InvalidAmount();
+    function freeSaleBuy(uint256 mintQuantity) external nonReentrant callerIsUser {
+        if (mintQuantity == 0) revert InvalidAmount();
 
-        if (!isSaleLive(freeSaleStartTime,freeSaleEndTime))
-            revert PublicSaleInactive();
+        if (!isSaleLive(freeSaleStartTime, freeSaleEndTime)) revert PublicSaleInactive();
 
-        if (freeSaleAmountMinted + mintQuantity > FREE_SALE_SUPPLY)
-            revert ExceedsFreeMaxSupply();
+        if (freeSaleAmountMinted + mintQuantity > FREE_SALE_SUPPLY) revert ExceedsFreeMaxSupply();
 
         if (freeSaleClaimed[msg.sender] + mintQuantity > FREE_SALE_MINT_LIMIT)
             revert ExceedsAllocatedForFreeSale();
@@ -152,14 +142,8 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
         emit Minted(getRemainingSupply());
     }
 
-    function cashierSaleBuy(uint256 mintQuantity)
-        external
-        payable
-        nonReentrant
-        callerIsUser
-    {
-        if (!isSaleLive(cashierSaleStartTime,cashierSaleEndTime))
-            revert PublicSaleInactive();
+    function cashierSaleBuy(uint256 mintQuantity) external payable nonReentrant callerIsUser {
+        if (!isSaleLive(cashierSaleStartTime, cashierSaleEndTime)) revert PublicSaleInactive();
 
         if (cashierSaleAmountMinted + mintQuantity > CASHIER_SALE_MINT_LIMIT)
             revert ExceedsCashierMaxSupply();
@@ -167,81 +151,76 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
         if (cashierSaleClaimed[msg.sender] + mintQuantity > CASHIER_SALE_MINT_LIMIT)
             revert ExceedsAllocatedForFreeSale();
 
-        if (msg.value < cashierSaleStartPrice)
-            revert InsufficientETHSent();
+        if (msg.value < cashierSaleStartPrice) revert InsufficientETHSent();
 
         unchecked {
             cashierSaleAmountMinted += mintQuantity;
             cashierSaleClaimed[msg.sender] += mintQuantity;
         }
 
-        for (uint256 i; i < mintQuantity;) {
+        for (uint256 i; i < mintQuantity; ) {
             totalSupply.increment();
             _mint(msg.sender, totalSupply.current());
-            unchecked { ++i; }
+            unchecked {
+                ++i;
+            }
         }
         emit Minted(getRemainingSupply());
     }
 
-    function vipServiceSaleBuy(uint256 mintQuantity)
-        external
-        payable
-        nonReentrant
-        callerIsUser
-    {
+    function vipServiceSaleBuy(uint256 mintQuantity) external payable nonReentrant callerIsUser {
         if (cashierSaleAmountMinted + mintQuantity > VIP_SERVICE_SALE_SUPPLY)
             revert ExceedsVipServiceMaxSupply();
 
-        if (msg.value < cashierSaleStartPrice)
-            revert InsufficientETHSent();
+        if (msg.value < cashierSaleStartPrice) revert InsufficientETHSent();
 
         unchecked {
             cashierSaleAmountMinted += mintQuantity;
             cashierSaleClaimed[msg.sender] += mintQuantity;
         }
 
-        for (uint256 i; i < mintQuantity;) {
+        for (uint256 i; i < mintQuantity; ) {
             totalSupply.increment();
             _mint(msg.sender, totalSupply.current());
-            unchecked { ++i; }
+            unchecked {
+                ++i;
+            }
         }
         emit Minted(getRemainingSupply());
     }
 
-    function foundersMint(uint mintQuantity)
-        external
-        onlyOwner
-        nonReentrant
-    {
+    function foundersMint(uint256 mintQuantity) external onlyOwner nonReentrant {
         if (foundersAmountMinted + mintQuantity > FOUNDERS_SUPPLY)
             revert ExceedsAllocatedForFounders();
 
-        for (uint256 i; i < mintQuantity;) {
+        for (uint256 i; i < mintQuantity; ) {
             totalSupply.increment();
             _mint(msg.sender, totalSupply.current());
-            unchecked { ++i; }
+            unchecked {
+                ++i;
+            }
         }
 
-        unchecked { foundersAmountMinted += mintQuantity; }
+        unchecked {
+            foundersAmountMinted += mintQuantity;
+        }
 
         emit Minted(getRemainingSupply());
     }
 
     function withdraw() external onlyOwner nonReentrant {
-        (bool success, ) = payable(msg.sender).call{
-            value: address(this).balance
-        }("");
+        (bool success, ) = payable(msg.sender).call{ value: address(this).balance }("");
 
-        if (!success)
-            revert WithdrawalFailed();
+        if (!success) revert WithdrawalFailed();
     }
 
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
-        require(_exists(tokenId),"ERC721Metadata: URI query for nonexistent token");
+        require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
         string memory currentBaseURI = _baseURI();
-        return bytes(currentBaseURI).length > 0
-            ? string(abi.encodePacked(currentBaseURI, tokenId.toString(), baseUriSuffix))
-            : "";
+        return
+            bytes(currentBaseURI).length > 0
+                ? string(abi.encodePacked(currentBaseURI, tokenId.toString(), baseUriSuffix))
+                : "";
     }
 
     function _baseURI() internal view override returns (string memory) {
@@ -253,14 +232,18 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
     }
 
     //flag = 0: wlSale, flag = 1: freeSale, flag = 2:cashierSale
-    function setSaleTime(uint256 _startTime,uint256 _endTime,uint flag) external onlyOwner {
-        if(flag == SET_WL_SALE_TIME){
+    function setSaleTime(
+        uint256 _startTime,
+        uint256 _endTime,
+        uint256 flag
+    ) external onlyOwner {
+        if (flag == SET_WL_SALE_TIME) {
             wlSaleStartTime = _startTime;
             wlSaleEndTime = _endTime;
-        }else if(flag == SET_FREE_SALE_TIME){
+        } else if (flag == SET_FREE_SALE_TIME) {
             freeSaleStartTime = _startTime;
             freeSaleEndTime = _endTime;
-        }else if(flag == SET_CASHIER_SALE_TIME){
+        } else if (flag == SET_CASHIER_SALE_TIME) {
             cashierSaleStartTime = _startTime;
             cashierSaleEndTime = _endTime;
         }
@@ -269,5 +252,4 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
     function setMerkleRoot(bytes32 _merkleRoot) external onlyOwner {
         merkleRoot = _merkleRoot;
     }
-
 }
