@@ -53,8 +53,8 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
 
     //VIP SERVICE
     uint256 public vipServiceSaleStartTime;
-    uint256 public vipServiceSaleStartPrice = 1 ether;
     uint256 public vipServiceSaleAmountMinted;
+    uint256 public vipServiceSaleStartPrice = 1 ether;
 
     error DirectMintFromContractNotAllowed();
     error PublicSaleInactive();
@@ -234,30 +234,19 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
     }
 
     function isWithinTimeOfWl() public view returns (bool) {
-        return
-            wlSaleStartTime > 0 &&
-            block.timestamp >= wlSaleStartTime &&
-            block.timestamp < wlSaleEndTime;
+        return block.timestamp < wlSaleEndTime && block.timestamp >= wlSaleStartTime;
     }
 
     function isWithinTimeOfFree() public view returns (bool) {
-        return
-            freeSaleStartTime > 0 &&
-            block.timestamp >= freeSaleStartTime &&
-            block.timestamp < freeSaleEndTime;
+        return block.timestamp < freeSaleEndTime && block.timestamp >= freeSaleStartTime;
     }
 
     function isWithinTimeOfCashier() public view returns (bool) {
-        return
-            cashierSaleStartTime > 0 &&
-            block.timestamp >= cashierSaleStartTime &&
-            block.timestamp < cashierSaleEndTime;
+        return block.timestamp < cashierSaleEndTime && block.timestamp >= cashierSaleStartTime;
     }
 
-     function isWithinTimeOfVipService() public view returns (bool) {
-        return
-            vipServiceSaleStartTime > 0 &&
-            block.timestamp >= vipServiceSaleStartTime;
+    function isWithinTimeOfVipService() public view returns (bool) {
+        return vipServiceSaleStartTime > 0 && block.timestamp >= vipServiceSaleStartTime;
     }
 
     function _baseURI() internal view override returns (string memory) {
