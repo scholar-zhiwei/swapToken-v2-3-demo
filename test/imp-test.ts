@@ -40,6 +40,8 @@ describe('Test IMP', async function () {
       const baseUri = 'ipfs://QmXRyAKyKRXMjJa6tD7eDe3YHH2V8Cegz5CzK6t9rrPN1d/'
       const currentTimestamp = (await provider.getBlock('latest')).timestamp
       await imp.setSaleTime(currentTimestamp - 1, currentTimestamp + 60 * 60 * 2, 0)
+      await imp.setSaleTime(currentTimestamp - 1, currentTimestamp + 60 * 60 * 2, 1)
+      await imp.setSaleTime(currentTimestamp - 1, currentTimestamp + 60 * 60 * 24, 2)
 
       await imp.setBaseURI(baseUri)
       tokenSnapshot = await takeSnapshot()
@@ -65,6 +67,24 @@ describe('Test IMP', async function () {
       await expect(imp.connect(whitelisted[0]).wlPreSaleBuy(proof, 2, 1)).emit(imp, 'Minted').withArgs(maxSupply.sub(1))
       expect(await imp.balanceOf(whitelisted[0].address)).to.be.equal(1)
       expect(await imp.totalSupply()).to.be.equal(1)
+    })
+    it('freeSaleBuy 1', async function () {
+      const maxSupply = await imp.MAX_SUPPLY()
+      await expect(imp.connect(owner).freeSaleBuy(1)).emit(imp, 'Minted').withArgs(maxSupply.sub(1))
+      expect(await imp.balanceOf(owner.address)).to.be.equal(1)
+      expect(await imp.totalSupply()).to.be.equal(1)
+    })
+    it('cashierSaleBuy 1', async function () {
+      const maxSupply = await imp.MAX_SUPPLY()
+      await expect(imp.connect(owner).cashierSaleBuy(2,{value:ethers.utils.parseEther("0.1")})).emit(imp, 'Minted').withArgs(maxSupply.sub(2))
+      expect(await imp.balanceOf(owner.address)).to.be.equal(2)
+      expect(await imp.totalSupply()).to.be.equal(2)
+    })
+    it('vipServiceSaleBuy 1', async function () {
+      const maxSupply = await imp.MAX_SUPPLY()
+      await expect(imp.connect(owner).vipServiceSaleBuy(10,{value:ethers.utils.parseEther("10")})).emit(imp, 'Minted').withArgs(maxSupply.sub(10))
+      expect(await imp.balanceOf(owner.address)).to.be.equal(10)
+      expect(await imp.totalSupply()).to.be.equal(10)
     })
   })
 })

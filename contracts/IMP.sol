@@ -167,7 +167,7 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
         if (cashierSaleClaimed[msg.sender] + mintQuantity > CASHIER_SALE_MINT_LIMIT)
             revert ExceedsAllocatedForFreeSale();
 
-        if (msg.value < cashierSaleStartPrice)
+        if (msg.value < cashierSaleStartPrice * mintQuantity)
             revert InsufficientETHSent();
 
         unchecked {
@@ -192,7 +192,7 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
         if (cashierSaleAmountMinted + mintQuantity > VIP_SERVICE_SALE_SUPPLY)
             revert ExceedsVipServiceMaxSupply();
 
-        if (msg.value < cashierSaleStartPrice)
+        if (msg.value < vipServiceSaleStartPrice * mintQuantity)
             revert InsufficientETHSent();
 
         unchecked {
