@@ -24,7 +24,6 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
     uint256 public constant CASHIER_SALE_SUPPLY = 5000;
     uint256 public constant VIP_SERVICE_SALE_SUPPLY = 100;
 
-
     Counters.Counter public totalSupply;
 
     // Founders
@@ -53,6 +52,7 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
     uint256 public constant CASHIER_SALE_MINT_LIMIT = 2;
 
     //VIP SERVICE
+    uint256 public vipServiceSaleStartTime;
     uint256 public vipServiceSaleStartPrice = 1 ether;
     uint256 public vipServiceSaleAmountMinted;
     mapping(address => uint256) public vipServiceSaleClaimed;
@@ -63,10 +63,9 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
     error ExceedsFreeMaxSupply();
     error ExceedsVipServiceMaxSupply();
     error ExceedsAllocatedForFreeSale();
-    error InvalidAmount();
     error WithdrawalFailed();
     error ExceedsAllocatedForFounders();
-    error PreSaleInactive();
+    error SaleInactive();
     error InsufficientETHSent();
     error NotOnWhitelist();
     error ExceedsPreSaleSupply();
@@ -94,7 +93,7 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
         uint256 allowedMintQuantity,
         uint256 mintQuantity
     ) external nonReentrant callerIsUser {
-        if (!isSaleLive(wlSaleStartTime, wlSaleEndTime)) revert PreSaleInactive();
+        if (!isSaleLive(wlSaleStartTime, wlSaleEndTime)) revert SaleInactive();
 
         if (preSaleAmountMinted + mintQuantity > PRE_SALE_SUPPLY) revert ExceedsPreSaleSupply();
 
@@ -121,9 +120,7 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
     }
 
     function freeSaleBuy(uint256 mintQuantity) external nonReentrant callerIsUser {
-        if (mintQuantity == 0) revert InvalidAmount();
-
-        if (!isSaleLive(freeSaleStartTime, freeSaleEndTime)) revert PublicSaleInactive();
+        if (!isSaleLive(freeSaleStartTime, freeSaleEndTime)) revert SaleInactive();
 
         if (freeSaleAmountMinted + mintQuantity > FREE_SALE_SUPPLY) revert ExceedsFreeMaxSupply();
 
@@ -142,7 +139,7 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
     }
 
     function cashierSaleBuy(uint256 mintQuantity) external payable nonReentrant callerIsUser {
-        if (!isSaleLive(cashierSaleStartTime, cashierSaleEndTime)) revert PublicSaleInactive();
+        if (!isSaleLive(cashierSaleStartTime, cashierSaleEndTime)) revert SaleInactive();
 
         if (cashierSaleAmountMinted + mintQuantity > CASHIER_SALE_MINT_LIMIT)
             revert ExceedsCashierMaxSupply();
@@ -168,11 +165,12 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
     }
 
     function vipServiceSaleBuy(uint256 mintQuantity) external payable nonReentrant callerIsUser {
+        if (block.timestamp < vipServiceSaleStartTime) revert SaleInactive();
+
         if (vipServiceSaleAmountMinted + mintQuantity > VIP_SERVICE_SALE_SUPPLY)
             revert ExceedsVipServiceMaxSupply();
 
-        if (msg.value < vipServiceSaleStartPrice * mintQuantity) 
-            revert InsufficientETHSent();
+        if (msg.value < vipServiceSaleStartPrice * mintQuantity) revert InsufficientETHSent();
 
         unchecked {
             vipServiceSaleAmountMinted += mintQuantity;
@@ -242,15 +240,15 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
     }
 
     function isWithinTimeOfWl() public view returns (bool) {
-        return  block.timestamp >= wlSaleStartTime && block.timestamp < wlSaleEndTime;
+        return block.timestamp >= wlSaleStartTime && block.timestamp < wlSaleEndTime;
     }
 
     function isWithinTimeOfFree() public view returns (bool) {
-        return  block.timestamp >= freeSaleStartTime && block.timestamp < freeSaleEndTime;
+        return block.timestamp >= freeSaleStartTime && block.timestamp < freeSaleEndTime;
     }
 
     function isWithinTimeOfCashier() public view returns (bool) {
-        return  block.timestamp >= cashierSaleStartTime && block.timestamp < cashierSaleEndTime;
+        return block.timestamp >= cashierSaleStartTime && block.timestamp < cashierSaleEndTime;
     }
 
     function _baseURI() internal view override returns (string memory) {
@@ -274,6 +272,10 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
     function setCashierSaleTime(uint256 _startTime, uint256 _endTime) external onlyOwner {
         cashierSaleStartTime = _startTime;
         cashierSaleEndTime = _endTime;
+    }
+
+    function setVipServiceSaleTime(uint256 _startTime) external onlyOwner {
+        vipServiceSaleStartTime = _startTime;
     }
 
     function setMerkleRoot(bytes32 _merkleRoot) external onlyOwner {
