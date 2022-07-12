@@ -96,7 +96,7 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
         bytes32[] memory _merkleproof,
         uint256 allowedMintQuantity,
         uint256 mintQuantity
-    ) external payable nonReentrant callerIsUser {
+    ) external nonReentrant callerIsUser {
         if (!isSaleLive(wlSaleStartTime,wlSaleEndTime))
             revert PreSaleInactive();
 
@@ -126,7 +126,6 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
 
     function freeSaleBuy(uint mintQuantity)
         external
-        payable
         nonReentrant
         callerIsUser
     {
