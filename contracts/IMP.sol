@@ -151,12 +151,8 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
         if (cashierSaleClaimed[msg.sender] + mintQuantity > CASHIER_SALE_MINT_LIMIT)
             revert ExceedsAllocatedForFreeSale();
 
-<<<<<<< HEAD
         if (msg.value < cashierSaleStartPrice * mintQuantity)
             revert InsufficientETHSent();
-=======
-        if (msg.value < cashierSaleStartPrice) revert InsufficientETHSent();
->>>>>>> 2c5273950612abc0ec25ba9ba2f2d4f9691a3f35
 
         unchecked {
             cashierSaleAmountMinted += mintQuantity;
