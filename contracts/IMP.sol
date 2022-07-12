@@ -89,7 +89,7 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
 
     function isSaleLive(uint startTime,uint endTime) public view returns (bool) {
         return
-            startTime > 0 && endTime > 0 && block.timestamp >= startTime && block.timestamp < endTime;
+            startTime > 0 && block.timestamp >= startTime && block.timestamp < endTime;
     }   
 
     function wlPreSaleBuy(
