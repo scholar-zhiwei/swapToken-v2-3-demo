@@ -9,9 +9,9 @@ task('verify:all', 'Verify all contracts', async (_, { ethers, run }) => {
     constructorArguments?: string[]
   }[] = [
     {
-      name: 'TestERC20',
+      name: 'IMP',
       address: token.address,
-      constructorArguments: ['Cyborg Civet', 'CC'],
+      constructorArguments: ['IMP', 'IMP'],
     },
   ]
 
