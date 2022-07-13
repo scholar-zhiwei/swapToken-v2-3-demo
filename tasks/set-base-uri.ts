@@ -6,14 +6,14 @@ task('set-base-uri', 'Set Base URI').setAction(async function (_, { ethers: { ge
 
   const baseUri = 'ipfs://QmXRyAKyKRXMjJa6tD7eDe3YHH2V8Cegz5CzK6t9rrPN1d/'
 
-  const cyborgCivet = (await getContract('CyborgCivet', deployer)) 
+  const imp = await getContract('IMP', deployer)
 
-  const currentUri = await cyborgCivet.baseURI()
+  const currentUri = await imp.baseURI()
   if (currentUri != baseUri) {
     console.log('Set Base URI...')
-    await (await cyborgCivet.setBaseURI(baseUri)).wait()
+    await (await imp.setBaseURI(baseUri)).wait()
     console.log('Set successfully')
-    console.log('New base URI:', await cyborgCivet.baseURI())
+    console.log('New base URI:', await imp.baseURI())
   } else {
     console.log('Skip Same URI')
   }
