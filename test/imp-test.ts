@@ -41,9 +41,10 @@ describe('Test IMP', async function () {
       // Set BaseUri
       const baseUri = 'ipfs://QmXRyAKyKRXMjJa6tD7eDe3YHH2V8Cegz5CzK6t9rrPN1d/'
       const currentTimestamp = (await provider.getBlock('latest')).timestamp
-      await imp.setWlSaleTime(currentTimestamp - 1, currentTimestamp + 60 * 60 * 2)
-      //   await imp.setSaleTime(currentTimestamp - 1, currentTimestamp + 60 * 60 * 2, 1)
-      //   await imp.setSaleTime(currentTimestamp - 1, currentTimestamp + 60 * 60 * 24, 2)
+      await imp.setWlSaleTime(currentTimestamp, currentTimestamp + 60 * 60 * 2)
+      await imp.setFreeSaleTime(currentTimestamp, currentTimestamp + 60 * 60 * 2)
+      await imp.setCashierSaleTime(currentTimestamp, currentTimestamp + 60 * 60 * 24)
+      await imp.setVipServiceSaleTime(currentTimestamp)
 
       await imp.setBaseURI(baseUri)
       tokenSnapshot = await takeSnapshot()
@@ -53,18 +54,13 @@ describe('Test IMP', async function () {
     })
     it('preSaleBuy 1', async function () {
       const leafNodes = whitelisted.map((x) => keccak256(solidityPack(['address', 'uint256'], [x.address, '2'])))
-      //   console.log('leaves', leafNodes)
       const tree = new MerkleTree(leafNodes, keccak256, { sortPairs: true })
       const root = tree.getHexRoot()
-      //   console.log('tree', tree.toString())
-      //   console.log('merkleRoot', root.toString())
 
-      //   console.log(tree.verify(proof, leaf, root))
       await imp.setMerkleRoot(root)
-      //   console.log('whitelisted[0].address', whitelisted[0].address)
+
       const leaf = keccak256(solidityPack(['address', 'uint256'], [whitelisted[0].address, '2']))
       const proof = tree.getHexProof(leaf)
-      //   console.log('proof', proof)
       const maxSupply = await imp.MAX_SUPPLY()
       await expect(imp.connect(whitelisted[0]).wlPreSaleBuy(proof, 2, 1)).emit(imp, 'Minted').withArgs(maxSupply.sub(1))
       expect(await imp.balanceOf(whitelisted[0].address)).to.be.equal(1)
@@ -72,27 +68,20 @@ describe('Test IMP', async function () {
     })
     it('preSaleBuy fail', async function () {
       const leafNodes = whitelisted.map((x) => keccak256(solidityPack(['address', 'uint256'], [x.address, '2'])))
-      //   console.log('leaves', leafNodes)
       const tree = new MerkleTree(leafNodes, keccak256, { sortPairs: true })
       const root = tree.getHexRoot()
-      //   console.log('tree', tree.toString())
-      //   console.log('merkleRoot', root.toString())
-
-      //   console.log(tree.verify(proof, leaf, root))
       await imp.setMerkleRoot(root)
-      //   console.log('whitelisted[0].address', whitelisted[0].address)
+
       const leaf = keccak256(solidityPack(['address', 'uint256'], [unWhitelisted[0].address, '2']))
       const proof = tree.getHexProof(leaf)
-      //   console.log('proof', proof)
-      const maxSupply = await imp.MAX_SUPPLY()
       await expect(imp.connect(unWhitelisted[0]).wlPreSaleBuy(proof, 2, 1)).revertedWithCustomError(
         imp,
-        'NotOnWhitelist'
+        'NotOnWhitelist',
       )
     })
     it('freeSaleBuy 1', async function () {
       const maxSupply = await imp.MAX_SUPPLY()
-      await expect(imp.connect(owner).freeSaleBuy(1)).emit(imp, 'Minted').withArgs(maxSupply.sub(1))
+      await expect(imp.connect(owner).freeSaleBuy()).emit(imp, 'Minted').withArgs(maxSupply.sub(1))
       expect(await imp.balanceOf(owner.address)).to.be.equal(1)
       expect(await imp.totalSupply()).to.be.equal(1)
     })
