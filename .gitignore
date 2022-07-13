@@ -5,6 +5,7 @@ cache
 artifacts
 exports
 typechain
+deployments/localhost
 coverage
 coverage.json
 yarn.lock
