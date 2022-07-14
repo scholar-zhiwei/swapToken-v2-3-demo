@@ -19,8 +19,8 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
 
     uint256 public constant MAX_SUPPLY = 10000;
     uint256 public constant FOUNDERS_SUPPLY = 900;
+    uint256 public constant WL_SALE_SUPPLY = 3000;
     uint256 public constant FREE_SALE_SUPPLY = 1000;
-    uint256 public constant PRE_SALE_SUPPLY = 3000;
     uint256 public constant CASHIER_SALE_SUPPLY = 5000;
     uint256 public constant VIP_SERVICE_SALE_SUPPLY = 100;
 
@@ -32,9 +32,9 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
     // WL MINT
     uint256 public wlSaleStartTime;
     uint256 public wlSaleEndTime;
-    mapping(address => uint256) public whitelistClaimed;
+    mapping(address => uint256) public wlSaleClaimed;
     bytes32 private merkleRoot;
-    uint256 public preSaleAmountMinted;
+    uint256 public wlSaleAmountMinted;
 
     //FREE MINT
     uint256 public freeSaleStartTime;
@@ -48,13 +48,13 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
     uint256 public cashierSaleEndTime;
     uint256 public cashierSaleAmountMinted;
     mapping(address => uint256) public cashierSaleClaimed;
-    uint256 public cashierSaleStartPrice = 0.05 ether;
+    uint256 public cashierSalePrice = 0.05 ether;
     uint256 public constant CASHIER_SALE_MINT_LIMIT = 2;
 
     //VIP SERVICE
     uint256 public vipServiceSaleStartTime;
     uint256 public vipServiceSaleAmountMinted;
-    uint256 public vipServiceSaleStartPrice = 1 ether;
+    uint256 public vipServiceSalePrice = 1 ether;
 
     error DirectMintFromContractNotAllowed();
     error PublicSaleInactive();
@@ -90,17 +90,17 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
     ) external nonReentrant callerIsUser {
         if (!isWithinTimeOfWl()) revert SaleInactive();
 
-        if (preSaleAmountMinted + mintQuantity > PRE_SALE_SUPPLY) revert ExceedsPreSaleSupply();
+        if (wlSaleAmountMinted + mintQuantity > WL_SALE_SUPPLY) revert ExceedsPreSaleSupply();
 
-        if (whitelistClaimed[msg.sender] + mintQuantity > allowedMintQuantity)
+        if (wlSaleClaimed[msg.sender] + mintQuantity > allowedMintQuantity)
             revert ExceedsAllocatedForPreSale();
 
         bytes32 leaf = keccak256(abi.encodePacked(msg.sender, allowedMintQuantity));
         if (!MerkleProof.verify(_merkleproof, merkleRoot, leaf)) revert NotOnWhitelist();
 
         unchecked {
-            preSaleAmountMinted += mintQuantity;
-            whitelistClaimed[msg.sender] += mintQuantity;
+            wlSaleAmountMinted += mintQuantity;
+            wlSaleClaimed[msg.sender] += mintQuantity;
         }
 
         for (uint256 i; i < mintQuantity; ) {
@@ -142,7 +142,7 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
         if (cashierSaleClaimed[msg.sender] + mintQuantity > CASHIER_SALE_MINT_LIMIT)
             revert ExceedsAllocatedForFreeSale();
 
-        if (msg.value < cashierSaleStartPrice * mintQuantity) revert InsufficientETHSent();
+        if (msg.value < cashierSalePrice * mintQuantity) revert InsufficientETHSent();
 
         unchecked {
             cashierSaleAmountMinted += mintQuantity;
@@ -165,7 +165,7 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
         if (vipServiceSaleAmountMinted + mintQuantity > VIP_SERVICE_SALE_SUPPLY)
             revert ExceedsVipServiceMaxSupply();
 
-        if (msg.value < vipServiceSaleStartPrice * mintQuantity) revert InsufficientETHSent();
+        if (msg.value < vipServiceSalePrice * mintQuantity) revert InsufficientETHSent();
 
         unchecked {
             vipServiceSaleAmountMinted += mintQuantity;
