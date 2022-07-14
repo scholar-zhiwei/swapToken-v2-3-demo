@@ -6,6 +6,7 @@
   "scripts": {
     "node": "hardhat node",
     "build": "cross-env TS_NODE_TRANSPILE_ONLY=1 hardhat compile",
+    "gen-root": "cross-env TS_NODE_TRANSPILE_ONLY=1 hardhat gen-merkle-root",
     "clean": "cross-env TS_NODE_TRANSPILE_ONLY=1 hardhat clean",
     "test": "yarn build && hardhat test",
     "kovan:deploy": "hardhat --network kovan deploy",
