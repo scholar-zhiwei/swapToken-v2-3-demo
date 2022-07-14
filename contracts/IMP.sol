@@ -19,8 +19,8 @@ contract IMP is ERC721, Ownable, ReentrancyGuard {
 
     uint256 public constant MAX_SUPPLY = 10000;
     uint256 public constant FOUNDERS_SUPPLY = 900;
-    uint256 public constant FREE_SALE_SUPPLY = 3000;
-    uint256 public constant PRE_SALE_SUPPLY = 1000;
+    uint256 public constant FREE_SALE_SUPPLY = 1000;
+    uint256 public constant PRE_SALE_SUPPLY = 3000;
     uint256 public constant CASHIER_SALE_SUPPLY = 5000;
     uint256 public constant VIP_SERVICE_SALE_SUPPLY = 100;
 
