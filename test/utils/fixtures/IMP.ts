@@ -1,12 +1,12 @@
 /* eslint-disable camelcase */
 import { JsonRpcSigner } from '@ethersproject/providers'
-import { IMP } from '../../../typechain/contracts/IMP'
+import { SwapToken } from '../../../typechain/SwapToken'
 import { deployContract } from '../contracts'
 
 export const fixtureIMP = async (signer: JsonRpcSigner) => {
-  const testIMP: IMP = await deployContract('IMP', signer, 'IMP', 'IMP')
+  const testSwapToken: SwapToken = await deployContract('SwapToken', signer)
 
   return {
-    testIMP,
+    testSwapToken,
   }
 }

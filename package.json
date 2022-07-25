@@ -4,7 +4,7 @@
   "description": "imp contract project",
   "main": "index.js",
   "scripts": {
-    "node": "hardhat node",
+    "forkMain": "npx hardhat node --fork https://eth-mainnet.alchemyapi.io/v2/iP4C05RwgWU2zyWxx9oQYhb52WTNXnfR",
     "build": "cross-env TS_NODE_TRANSPILE_ONLY=1 hardhat compile",
     "gen-root": "cross-env TS_NODE_TRANSPILE_ONLY=1 hardhat gen-merkle-root",
     "clean": "cross-env TS_NODE_TRANSPILE_ONLY=1 hardhat clean",

@@ -31,14 +31,13 @@ const namedAccounts = {
 
 export type Signers = { [name in keyof typeof namedAccounts]: SignerWithAddress }
 
-import './tasks'
 import { HardhatUserConfig } from 'hardhat/config'
 
 const config: HardhatUserConfig = {
   solidity: {
     compilers: [
       {
-        version: '0.8.4',
+        version: '0.8.9',
         settings: {
           optimizer: {
             enabled: true,
@@ -87,6 +86,11 @@ const config: HardhatUserConfig = {
     truffle: {
       url: `http://localhost:24012/rpc`,
       timeout: 60 * 60 * 1000,
+    },
+    hardhat: {
+      forking: {
+        url: 'https://eth-mainnet.alchemyapi.io/v2/iP4C05RwgWU2zyWxx9oQYhb52WTNXnfR',
+      },
     },
   },
   typechain: {
