@@ -22,7 +22,7 @@ interface ISwapRouter is IUniswapV3SwapCallback {
         uint160 sqrtPriceLimitX96;
     }
 
-    //给出输入  需要求输出token数，用输入换出尽量多的输出
+    //给出精确的输入  需要求输出token数，用输入换出尽量多的输出
     function exactInputSingle(ExactInputSingleParams calldata params) external payable returns (uint256 amountOut);
 
     struct ExactInputParams {
@@ -47,7 +47,7 @@ interface ISwapRouter is IUniswapV3SwapCallback {
         uint160 sqrtPriceLimitX96;
     }
 
-    //给出输出  需要求输入token数，用尽量少的输入换出输出
+    //给出精确输出  需要求输入token数，用尽量少的输入换出输出
     function exactOutputSingle(ExactOutputSingleParams calldata params) external payable returns (uint256 amountIn);
 
     struct ExactOutputParams {
