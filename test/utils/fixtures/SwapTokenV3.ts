@@ -1,10 +1,10 @@
 /* eslint-disable camelcase */
 import { JsonRpcSigner } from '@ethersproject/providers'
-import { SwapTokenV2 } from '../../../typechain/SwapTokenV2.sol/SwapTokenV2'
+import { SwapTokenv3 } from '../../../typechain/SwapTokenV3.sol/SwapTokenv3'
 import { deployContract } from '../contracts'
 
 export const fixtureIMP = async (signer: JsonRpcSigner) => {
-  const testSwapToken: SwapTokenV2 = await deployContract('SwapTokenV2', signer)
+  const testSwapToken: SwapTokenv3 = await deployContract('SwapTokenV3', signer)
 
   return {
     testSwapToken,

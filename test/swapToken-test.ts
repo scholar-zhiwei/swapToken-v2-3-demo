@@ -3,9 +3,9 @@ import { expect } from 'chai'
 import { BigNumber} from 'ethers'
 import { keccak256, solidityPack } from 'ethers/lib/utils'
 import { ethers, network,getNamedAccounts} from 'hardhat'
-import { SwapToken } from '../typechain/SwapToken'
+import { SwapTokenv3 } from '../typechain/SwapTokenV3.sol/SwapTokenv3'
 
-import { fixtureIMP } from './utils/fixtures/IMP'
+import { fixtureIMP } from './utils/fixtures/SwapTokenV3'
 
 describe('Test IMP', async function () {
   let owner: any
@@ -22,19 +22,19 @@ describe('Test IMP', async function () {
   })
 
   describe('Test Sale', function () {
-    let swapToken: SwapToken
+    let swapTokenv3: SwapTokenv3
     let tokenSnapshot: SnapshotRestorer
     before('', async function () {
-      ;({ testSwapToken: swapToken } = await fixtureIMP(owner))
+      ;({ testSwapToken: swapTokenv3 } = await fixtureIMP(owner))
       tokenSnapshot = await takeSnapshot()
     })
     beforeEach(async () => {
       await tokenSnapshot.restore()
     })
     it('swapToken 1', async function () {
-      const ethAmount = await swapToken.getEstimatedETHforDAI(100)
+      const ethAmount = await swapTokenv3.getEstimatedETHforDAI(100)
       console.log(ethAmount)
-      await swapToken.connect(owner).convertEthToExactDai(100,{value:BigNumber.from(ethAmount)})
+      await swapTokenv3.connect(owner).convertEthToExactDai(100,{value:BigNumber.from(ethAmount)})
     })
   })
 })
